@@ -2,7 +2,7 @@
     "name": "alexanderwende.mongodb",
     "title": "MongoDB",
     "description": "Adds MongoDB support to Brackets",
-    "homepage": "",
+    "homepage": "https://github.com/alexanderwende/brackets-mongodb",
     "version": "0.1.0",
     "author": "Alexander Wende",
     "license": "MIT",
