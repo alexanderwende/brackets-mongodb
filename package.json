@@ -1,0 +1,13 @@
+{
+    "name": "alexanderwende.mongodb",
+    "title": "MongoDB",
+    "description": "Adds MongoDB support to Brackets",
+    "homepage": "",
+    "version": "0.1.0",
+    "author": "Alexander Wende",
+    "license": "MIT",
+    "engines": {
+        "brackets": ">=0.40.0"
+    },
+    "keywords": "mongodb"
+}
