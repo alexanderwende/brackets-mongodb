@@ -6,6 +6,7 @@ define(function (require, exports, module) {
         CommandManager = brackets.getModule('command/CommandManager'),
         PreferencesManager = brackets.getModule('preferences/PreferencesManager'),
         Menus = brackets.getModule('command/Menus'),
+        NodeDomain = brackets.getModule('utils/NodeDomain'),
         ExtensionUtils = brackets.getModule('utils/ExtensionUtils'),
 		AppInit = brackets.getModule('utils/AppInit');
 
@@ -16,6 +17,31 @@ define(function (require, exports, module) {
     var preferences = PreferencesManager.getExtensionPrefs('alexanderwende.mongodb');
 
     preferences.definePreference('enabled', 'boolean', false);
+
+    var mongoDomain = new NodeDomain('alexanderwende.mongodb', ExtensionUtils.getModulePath(module, 'node/MongoDomain'));
+
+
+    function mongoConnect () {
+
+        mongoDomain.exec('connect', 'mongodb://localhost:27017/test')
+            .done(function (users) {
+                console.log('[brackets-mongodb] connect users: %o', users);
+            })
+            .fail(function (error) {
+                console.log('[brackets-mongodb] connect error: %o', error);
+            });
+    }
+
+    function mongoClose () {
+
+        mongoDomain.exec('close')
+            .done(function () {
+                console.log('[brackets-mongodb] close');
+            })
+            .fail(function (error) {
+                console.log('[brackets-mongodb] close error: %o', error);
+            });
+    }
 
 
 
@@ -31,15 +57,19 @@ define(function (require, exports, module) {
         if (enable) {
             console.log("mongoDB show");
             mongoPanel.show();
+            mongoConnect();
         } else {
             console.log("mongoDB hide");
             mongoPanel.hide();
+            mongoClose();
         }
 
         preferences.set('enabled', enable);
         preferences.save();
 
         CommandManager.get(COMMAND_ID).setChecked(enable);
+
+
     }
 
 
