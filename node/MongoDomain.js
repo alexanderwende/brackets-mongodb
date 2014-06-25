@@ -2,32 +2,47 @@
 
     'use strict';
 
-    var MongoClient = require('mongodb').MongoClient;
+    var MongoClient = require('mongodb').MongoClient,
+        Server      = require('mongodb').Server,
+        Db          = require('mongodb').Db;
 
-    console.log('MongoDomain MongoClient: %o', MongoClient);
+
 
     var MongoDB = {
 
-        connect: function (url, errback) {
+        mongoClient: null,
 
-            MongoClient.connect(url, function (err, db) {
+        db: null,
+
+        connect: function (host, port, db, errback) {
+
+            if (this.mongoClient) this.mongoClient.close();
+
+            this.mongoClient = new MongoClient(new Server(host, port), {native_parser: true});
+
+            this.mongoClient.open(function (err, mongoClient) {
 
                 if (err) return errback(err, null);
 
-                var collection = db.collection('users');
+                MongoDB.db = mongoClient.db(db);
 
-                collection.find().toArray(function (err, items) {
+                MongoDB.db.collectionsInfo().toArray(function (err, info) {
 
-                    if (err) return errback(err), null;
+                    if (err) return errback(err, null);
 
-                    errback(null, items);
+                    errback(null, info);
                 });
             });
         },
 
         close: function (errback) {
 
-            MongoClient.close(errback);
+            if (this.mongoClient) {
+                this.mongoClient.close(errback);
+            }
+            else {
+                errback(null, null);
+            }
         }
     };
 
@@ -46,17 +61,27 @@
             // input parameters
             [
                 {
-                    name: 'url',
+                    name: 'host',
                     type: 'string',
-                    description: 'The mongoDB url'
+                    description: 'The mongoDB host'
+                },
+                {
+                    name: 'port',
+                    type: 'number',
+                    description: 'The mongoDB port'
+                },
+                {
+                    name: 'db',
+                    type: 'string',
+                    description: 'The mongoDB database'
                 }
             ],
             // return values
             [
                 {
-                    name: 'users',
+                    name: 'collectionsInfo',
                     type: 'Array',
-                    description: 'The users'
+                    description: 'The collections information for the current database'
                 }
             ]
         );

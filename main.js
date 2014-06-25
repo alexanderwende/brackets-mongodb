@@ -17,15 +17,18 @@ define(function (require, exports, module) {
     var preferences = PreferencesManager.getExtensionPrefs('alexanderwende.mongodb');
 
     preferences.definePreference('enabled', 'boolean', false);
+    preferences.definePreference('host', 'string', 'localhost');
+    preferences.definePreference('port', 'number', 27017);
+    preferences.definePreference('db', 'string', 'test');
 
     var mongoDomain = new NodeDomain('alexanderwende.mongodb', ExtensionUtils.getModulePath(module, 'node/MongoDomain'));
 
 
     function mongoConnect () {
 
-        mongoDomain.exec('connect', 'mongodb://localhost:27017/test')
-            .done(function (users) {
-                console.log('[brackets-mongodb] connect users: %o', users);
+        mongoDomain.exec('connect', preferences.get('host'), preferences.get('port'), preferences.get('db'))
+            .done(function (info) {
+                console.log('[brackets-mongodb] connect collections: %o', info);
             })
             .fail(function (error) {
                 console.log('[brackets-mongodb] connect error: %o', error);
@@ -68,8 +71,6 @@ define(function (require, exports, module) {
         preferences.save();
 
         CommandManager.get(COMMAND_ID).setChecked(enable);
-
-
     }
 
 
