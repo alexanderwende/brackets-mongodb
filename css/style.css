@@ -1,0 +1,6 @@
+.alexanderwende-mongodb > .table-container > .collections > .collection {
+    padding: 0 8px;
+}
+.alexanderwende-mongodb > .table-container > .collections > .collection:hover {
+    background-color: rgba(255,255,255,.5);
+}

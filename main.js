@@ -12,7 +12,7 @@ define(function (require, exports, module) {
 
     var COMMAND_ID = 'alexanderwende.mongodb';
 
-    var mongoPanel, mongoPanelHTML = require('text!template/mongoPanel.html');
+    var mongoPanel;
 
     var preferences = PreferencesManager.getExtensionPrefs('alexanderwende.mongodb');
 
@@ -24,14 +24,16 @@ define(function (require, exports, module) {
     var mongoDomain = new NodeDomain('alexanderwende.mongodb', ExtensionUtils.getModulePath(module, 'node/MongoDomain'));
 
 
-    function mongoConnect () {
+    function mongoConnect (errback) {
 
         mongoDomain.exec('connect', preferences.get('host'), preferences.get('port'), preferences.get('db'))
             .done(function (info) {
                 console.log('[brackets-mongodb] connect collections: %o', info);
+                errback(null, info);
             })
             .fail(function (error) {
                 console.log('[brackets-mongodb] connect error: %o', error);
+                errback(err, null);
             });
     }
 
@@ -58,11 +60,16 @@ define(function (require, exports, module) {
     function enableMongoDB (enable) {
 
         if (enable) {
-            console.log("mongoDB show");
             mongoPanel.show();
-            mongoConnect();
+            mongoPanel.$panel.find('.toolbar .close').on('click', function () { enableMongoDB(false); });
+            mongoConnect(function (err, info) {
+                mongoPanel.$panel.find('.table-container').html(Mustache.render(
+                    require('text!template/collectionList.html'),
+                    {collections: info}
+                ))
+            });
         } else {
-            console.log("mongoDB hide");
+            mongoPanel.$panel.find('.toolbar .close').off();
             mongoPanel.hide();
             mongoClose();
         }
@@ -77,7 +84,9 @@ define(function (require, exports, module) {
 
     AppInit.appReady(function () {
 
-        ExtensionUtils.loadStyleSheet(module, 'style.css');
+        ExtensionUtils.loadStyleSheet(module, 'css/style.css');
+
+        var mongoPanelHTML = require('text!template/mongoPanel.html');
 
         CommandManager.register('MongoDB', COMMAND_ID, toggleMongoDB);
 
@@ -88,7 +97,7 @@ define(function (require, exports, module) {
             menu.addMenuItem(COMMAND_ID, 'Ctrl-Alt-M');
         }
 
-        mongoPanel = PanelManager.createBottomPanel('alexanderwende.mongodb.panel', $(mongoPanelHTML), 200);
+        mongoPanel = PanelManager.createBottomPanel('alexanderwende.mongodb.panel', $(mongoPanelHTML), 100);
 
         if (preferences.get('enabled')) { enableMongoDB(true); }
     });
